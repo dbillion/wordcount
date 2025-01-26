@@ -3,8 +3,10 @@ package com.ibrahim;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -34,7 +36,7 @@ public class WordFrequencyResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(
         summary = "Upload a text file to analyze word frequency",
-        description = "This endpoint accepts a text file and returns total word count and frequencies."
+        description = "This endpoint accepts a text file and returns detailed word statistics."
     )
     @APIResponse(
         responseCode = "200",
@@ -42,7 +44,9 @@ public class WordFrequencyResource {
         content = @Content(
             mediaType = MediaType.APPLICATION_JSON,
             examples = @ExampleObject(
-                value = "{\"totalWords\": 5, \"frequencies\": {\"hello\": 3, \"world\": 1, \"quarkus\": 1}}"
+                value = "{\"totalWords\": 5, \"frequencies\": {\"hello\": 3, \"world\": 1, \"quarkus\": 1}, " +
+                        "\"totalLines\": 4, \"totalSentences\": 3, \"emptyLines\": 1, " +
+                        "\"wordCountsPerLine\": [2, 3, 0, 1], \"wordCountsPerSentence\": [2, 3, 1]}"
             )
         )
     )
@@ -81,9 +85,42 @@ public class WordFrequencyResource {
             Map<String, Long> frequencies = countWords(content);
             long totalWords = frequencies.values().stream().mapToLong(Long::longValue).sum();
 
+            List<String> lines = content.lines().collect(Collectors.toList());
+            int totalLines = lines.size();
+            int emptyLines = 0;
+            int totalSentences = 0;
+            List<Integer> lineWordCounts = new ArrayList<>();
+            List<Integer> sentenceWordCounts = new ArrayList<>();
+
+            for (String line : lines) {
+                
+                int lineWordCount = countWordsInString(line);
+                lineWordCounts.add(lineWordCount);
+
+                
+                if (line.trim().isEmpty()) {
+                    emptyLines++;
+                }
+
+                
+                String[] sentences = line.split("[.!?]+\\s*");
+                for (String sentence : sentences) {
+                    if (!sentence.trim().isEmpty()) {
+                        totalSentences++;
+                        int sentenceWordCount = countWordsInString(sentence);
+                        sentenceWordCounts.add(sentenceWordCount);
+                    }
+                }
+            }
+
             Map<String, Object> result = new HashMap<>();
             result.put("totalWords", totalWords);
             result.put("frequencies", frequencies);
+            result.put("totalLines", totalLines);
+            result.put("totalSentences", totalSentences);
+            result.put("emptyLines", emptyLines);
+            result.put("wordCountsPerLine", lineWordCounts);
+            result.put("wordCountsPerSentence", sentenceWordCounts);
 
             return Response.ok(result).build();
             
@@ -102,5 +139,11 @@ public class WordFrequencyResource {
                         Function.identity(),
                         Collectors.counting()
                 ));
+    }
+
+     int countWordsInString(String input) {
+        return (int) Arrays.stream(input.split("\\W+"))
+                .filter(word -> !word.isEmpty())
+                .count();
     }
 }

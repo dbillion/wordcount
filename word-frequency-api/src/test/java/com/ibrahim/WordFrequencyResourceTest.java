@@ -1,9 +1,10 @@
 package com.ibrahim;
 
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
-import java.util.Map;
-import io.quarkus.test.junit.QuarkusTest;
+
 
 
 public class WordFrequencyResourceTest {

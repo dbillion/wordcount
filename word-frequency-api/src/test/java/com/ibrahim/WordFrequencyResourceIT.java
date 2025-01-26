@@ -1,19 +1,20 @@
 
 package com.ibrahim;
-import io.quarkus.test.junit.QuarkusTest;
-import io.restassured.http.ContentType;
-import org.junit.jupiter.api.Test;
 import java.io.File;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
+import org.junit.jupiter.api.Test;
+
+import io.quarkus.test.junit.QuarkusTest;
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.*;
 
 @QuarkusTest
 public class WordFrequencyResourceIT {
 
     @Test
     void testValidFileUpload() {
-        File testFile = new File("src/test/resources/sample.txt"); // Sample: "Hello world hello"
+        File testFile = new File("src/test/resources/sample.txt"); 
 
         given()
             .multiPart("file", testFile)
