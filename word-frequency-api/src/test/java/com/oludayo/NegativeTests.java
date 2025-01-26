@@ -1,4 +1,4 @@
-package com.ibrahim;
+package com.oludayo;
 
 import io.quarkus.test.junit.QuarkusTest;
 
